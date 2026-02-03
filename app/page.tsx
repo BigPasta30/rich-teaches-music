@@ -105,6 +105,22 @@ function isAllowed(from?: Camelot, to?: Camelot) {
 
 /** ---------- BPM helpers (3-rule system) ---------- */
 
+//Genre Options
+const GENRE_OPTIONS = [
+  "house",
+  "techno",
+  "dnb",
+  "jungle",
+  "dubstep",
+  "trap",
+  "hiphop",
+  "rnb",
+  "pop",
+  "ambient",
+  "downtempo",
+] as const;
+
+
 // Rule 2: Genre BPM ranges
 const GENRE_RANGES: Record<string, { min: number; max: number }> = {
   house: { min: 118, max: 135 },
@@ -519,28 +535,44 @@ export default function Home() {
 
                       {/* Genre */}
                       <td className="px-4 py-3 text-slate-300">
-                        {isEditing(editing, t.id, "genre") ? (
-                          <input
-                            autoFocus
-                            className="w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-slate-100 outline-none focus:border-slate-500"
-                            value={draft}
-                            onChange={(e) => setDraft(e.target.value)}
-                            onBlur={() => commitEdit(t.id, "genre")}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") commitEdit(t.id, "genre");
-                              if (e.key === "Escape") cancelEdit();
-                            }}
-                          />
-                        ) : (
-                          <div
-                            className="cursor-text"
-                            title="Click to edit (e.g., house, hiphop, dnb, techno)"
-                            onClick={() => startEdit(t.id, "genre", t.genre ?? "")}
-                          >
-                            {t.genre ?? "—"}
-                          </div>
-                        )}
-                      </td>
+  {isEditing(editing, t.id, "genre") ? (
+    <select
+      autoFocus
+      className="w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-slate-100 outline-none focus:border-slate-500"
+      value={draft}
+      onChange={(e) => {
+        setDraft(e.target.value);
+        // Commit immediately on selection (no need to press Enter)
+        // If you prefer requiring Enter, remove the next line.
+        commitEdit(t.id, "genre");
+      }}
+      onBlur={() => commitEdit(t.id, "genre")}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") cancelEdit();
+      }}
+    >
+      <option value="">—</option>
+      {GENRE_OPTIONS.map((g) => (
+        <option key={g} value={g}>
+          {g}
+        </option>
+      ))}
+      {/* Allow custom typed genres if you ever want: remove this block if not */}
+      {draft && !GENRE_OPTIONS.includes(draft as any) ? (
+        <option value={draft}>{draft}</option>
+      ) : null}
+    </select>
+  ) : (
+    <div
+      className="cursor-pointer"
+      title="Click to choose genre"
+      onClick={() => startEdit(t.id, "genre", t.genre ?? "")}
+    >
+      {t.genre ?? "—"}
+    </div>
+  )}
+</td>
+
 
                       {/* BPM */}
                       <td className="px-4 py-3 tabular-nums text-slate-200">
